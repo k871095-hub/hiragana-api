@@ -60,21 +60,22 @@
     .tab-content-panel { height: 100%; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
     .tab-content-panel.active { display: block; }
     
-    .genre-section { margin-bottom: 25px; }
-    .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 10px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; }
+    /* ✨ 選択画面を中央寄せにするセクション設定 */
+    .genre-section { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
+    .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 15px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; align-self: flex-start; }
     
-    /* ✨ 行ごとのグループ（5文字ずつ）スタイル */
-    .char-row-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    /* ✨ 行ごとのグループ（5文字ずつ）スタイルを中央寄せに変更 */
+    .char-row-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; width: 100%; }
     
-    /* ✨ 数字用の2列5つずつシンメトリースタイル */
-    .grid-suuji-container { display: flex; gap: 40px; justify-content: center; padding: 20px 0; }
-    .grid-suuji-column { display: flex; flex-direction: column; gap: 12px; width: 150px; }
+    /* ✨ 数字用の横並び2段コンテナスタイル */
+    .grid-suuji-container { display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; padding: 20px 0; width: 100%; }
+    .grid-suuji-row { display: flex; gap: 12px; justify-content: center; width: 100%; }
 
     .btn-kanji { font-family: 'Klee One', serif; width: 58px; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; display: flex; align-items: center; justify-content: center; }
     .btn-kanji.selected { background-color: #ffedd5; border-color: #ea580c; }
     
     /* 数字用のでっかいボタン */
-    .btn-suuji-large { font-family: 'Klee One', serif; width: 100%; height: 64px; font-weight: bold; border-radius: 16px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 28px; touch-action: none; display: flex; align-items: center; justify-content: center; }
+    .btn-suuji-large { font-family: 'Klee One', serif; width: 64px; height: 64px; font-weight: bold; border-radius: 16px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 28px; touch-action: none; display: flex; align-items: center; justify-content: center; }
     .btn-suuji-large.selected { background-color: #ffedd5; border-color: #ea580c; }
 
     .footer-list-area { height: 12vh; display: flex; align-items: center; justify-content: center; }
@@ -278,11 +279,11 @@
       }, false);
     })();
 
-    // 📄 ひらがな・カタカナ・すうじ の定義データ（0を追加してグループ分けを明確化）
+    // 📄 ひらがな・カタカナ・すうじ の定義データ
     const CHARACTER_DATA = [
       // 1. ひらがな（清音・濁音・半濁音）
       ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
-      ...("がぎぐげござじずぜぞだぢづでどばびぶべぼ".split("").map((c, i) => ({ id: `H_D_${i}`, char: c, reading: c, type: 'H', genre: 'だくおん（が〜ぼ）' }))),
+      ...("ganigugegozajizuzezoダヂヅデドばびぶべぼ".split("").map((c, i) => ({ id: `H_D_${i}`, char: "がぎぐげござじずぜぞだぢづでどばびぶべぼ"[i], reading: "がぎぐげござじずぜぞだぢづでどばびぶべぼ"[i], type: 'H', genre: 'だくおん（が〜ぼ）' }))),
       ...("ぱぴぷぺぽ".split("").map((c, i) => ({ id: `H_HD_${i}`, char: c, reading: c, type: 'H', genre: 'はんだくおん（ぱ〜ぽ）' }))),
 
       // 2. カタカナ（清音・濁音・半濁音）
@@ -290,7 +291,7 @@
       ...("ガギグゲゴザジズゼゾダヂヅデドバビブベボ".split("").map((c, i) => ({ id: `K_D_${i}`, char: c, reading: c, type: 'K', genre: 'ダクオン（ガ〜ボ）' }))),
       ...("パピプペポ".split("").map((c, i) => ({ id: `K_HD_${i}`, char: c, reading: c, type: 'K', genre: 'ハンダクオン（パ〜ぽ）' }))),
 
-      // 3. 数字（0を最後に追加）
+      // 3. 数字（1〜5, 6〜0の構成）
       ...("1234567890".split("").map((c, i) => ({ id: `S_${i}`, char: c, reading: c, type: 'S', genre: 'すうじ（1〜0）' })))
     ];
 
@@ -378,7 +379,7 @@
       if(tabCode === 'S') { document.getElementById('tab-s').classList.add('active'); document.getElementById('panel-s').classList.add('active'); }
     }
 
-    // 🗂️ パネル内ボタン構築（行ごとの改行、数字の2列シンメトリー対応）
+    // 🗂️ パネル内ボタン構築（中央寄せ＆数字の横並び構成にアップデート）
     function buildCategoryPanels() {
       const tabs = { 'H': 'panel-h', 'K': 'panel-k', 'S': 'panel-s' };
       
@@ -400,15 +401,15 @@
           
           const items = tabData.filter(item => item.genre === genreName);
 
-          // ✨ 【数字タブ】の場合：1〜5 と 6〜0 の2列シンメトリー
+          // ✨ 【数字タブ】の場合：1〜5 と 6〜0 の2段の横並び構成
           if (code === 'S') {
             const container = document.createElement('div');
             container.className = 'grid-suuji-container';
             
-            const col1 = document.createElement('div');
-            col1.className = 'grid-suuji-column';
-            const col2 = document.createElement('div');
-            col2.className = 'grid-suuji-column';
+            const row1 = document.createElement('div');
+            row1.className = 'grid-suuji-row';
+            const row2 = document.createElement('div');
+            row2.className = 'grid-suuji-row';
 
             items.forEach((item, index) => {
               const btn = document.createElement('button');
@@ -422,17 +423,17 @@
               };
               
               if (index < 5) {
-                col1.appendChild(btn); // 1〜5
+                row1.appendChild(btn); // 1〜5を1段目に
               } else {
-                col2.appendChild(btn); // 6〜0
+                row2.appendChild(btn); // 6〜0を2段目に
               }
             });
 
-            container.appendChild(col1);
-            container.appendChild(col2);
+            container.appendChild(row1);
+            container.appendChild(row2);
             section.appendChild(container);
           } 
-          // ✨ 【ひらがな・カタカナ】の場合：5文字（行）ごとに改行してスキマをあける
+          // ✨ 【ひらがな・カタカナ】の場合：5文字（行）ごとに区切って中央配置
           else {
             let rowGroup = document.createElement('div');
             rowGroup.className = 'char-row-group';
@@ -449,9 +450,6 @@
               };
               rowGroup.appendChild(btn);
 
-              // 5文字ごと、または最後の文字の時にグループをセクションに追加して新しくする
-              // や行（やゆよ）、わ行（わをん）のように5文字未満でも綺麗に行が分かれるよう、
-              // 特定の文字（お、こ、そ、と、の、ほ、も、よ、ん、ゴ、ゾ、ド、ボ、ポ等）の後、または単純に5つ並んだら区切る
               const isSpecialBreak = (code === 'H' && genreName.includes('せいおん') && "おこそとのほもよん".includes(item.char)) ||
                                      (code === 'K' && genreName.includes('セイオン') && "オコソトノホモヨン".includes(item.char));
 
