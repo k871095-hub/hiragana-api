@@ -64,7 +64,7 @@
     .genre-section { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
     .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 15px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; align-self: flex-start; }
     
-    /* 行ごとのグループ（5文字ずつ）スタイルを中央寄せに変更 */
+    /* 行ごとのグループスタイルを中央寄せに変更 */
     .char-row-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; width: 100%; }
     
     /* 数字用の横並び2段コンテナスタイル */
@@ -433,7 +433,7 @@
             container.appendChild(row2);
             section.appendChild(container);
           } 
-          // 【ひらがな・カタカナ】の場合：5文字（行）ごとに区切って中央配置
+          // 【ひらがな・カタカナ】の場合：5文字ごとに区切りつつ、や行の後は強制改行
           else {
             let rowGroup = document.createElement('div');
             rowGroup.className = 'char-row-group';
@@ -450,9 +450,9 @@
               };
               rowGroup.appendChild(btn);
 
-              // 特別な改行チェック：「ろ」の後と「ん」の後で綺麗に行を閉じるためのフラグ
-              const isSpecialBreak = (code === 'H' && genreName.includes('せいおん') && item.char === 'ろ') ||
-                                     (code === 'K' && genreName.includes('セイオン') && item.char === 'ロ');
+              // 🌟 「よ・ヨ」の後で強制的に改行を入れる特別チェック
+              const isSpecialBreak = (code === 'H' && genreName.includes('せいおん') && item.char === 'よ') ||
+                                     (code === 'K' && genreName.includes('セイオン') && item.char === 'ヨ');
 
               if ((index + 1) % 5 === 0 || isSpecialBreak || index === items.length - 1) {
                 section.appendChild(rowGroup);
