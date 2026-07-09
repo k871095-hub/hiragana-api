@@ -62,10 +62,21 @@
     
     .genre-section { margin-bottom: 25px; }
     .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 10px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; }
-    .grid-kanji { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
     
-    .btn-kanji { font-family: 'Klee One', serif; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; }
+    /* ✨ 行ごとのグループ（5文字ずつ）スタイル */
+    .char-row-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    
+    /* ✨ 数字用の2列5つずつシンメトリースタイル */
+    .grid-suuji-container { display: flex; gap: 40px; justify-content: center; padding: 20px 0; }
+    .grid-suuji-column { display: flex; flex-direction: column; gap: 12px; width: 150px; }
+
+    .btn-kanji { font-family: 'Klee One', serif; width: 58px; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; display: flex; align-items: center; justify-content: center; }
     .btn-kanji.selected { background-color: #ffedd5; border-color: #ea580c; }
+    
+    /* 数字用のでっかいボタン */
+    .btn-suuji-large { font-family: 'Klee One', serif; width: 100%; height: 64px; font-weight: bold; border-radius: 16px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 28px; touch-action: none; display: flex; align-items: center; justify-content: center; }
+    .btn-suuji-large.selected { background-color: #ffedd5; border-color: #ea580c; }
+
     .footer-list-area { height: 12vh; display: flex; align-items: center; justify-content: center; }
 
     /* ③ 練習画面 */
@@ -199,7 +210,6 @@
       </div>
     </div>
 
-    <!-- 🌟 前作そのまま！恐怖の（？）6連続練習パネル -->
     <div class="bottom-panel" id="practice-bg-panel">
       <div class="grid-cells" id="cells-container"></div>
     </div>
@@ -268,7 +278,7 @@
       }, false);
     })();
 
-    // 📄 ひらがな・カタカナ・すうじ の定義データ（全文字網羅）
+    // 📄 ひらがな・カタカナ・すうじ の定義データ（0を追加してグループ分けを明確化）
     const CHARACTER_DATA = [
       // 1. ひらがな（清音・濁音・半濁音）
       ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
@@ -276,12 +286,12 @@
       ...("ぱぴぷぺぽ".split("").map((c, i) => ({ id: `H_HD_${i}`, char: c, reading: c, type: 'H', genre: 'はんだくおん（ぱ〜ぽ）' }))),
 
       // 2. カタカナ（清音・濁音・半濁音）
-      ...("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミむメモヤユヨラリルレロワヲン".split("").map((c, i) => ({ id: `K_S_${i}`, char: c, reading: c, type: 'K', genre: 'セイオン（ア〜ン）' }))),
+      ...("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン".split("").map((c, i) => ({ id: `K_S_${i}`, char: c, reading: c, type: 'K', genre: 'セイオン（ア〜ン）' }))),
       ...("ガギグゲゴザジズゼゾダヂヅデドバビブベボ".split("").map((c, i) => ({ id: `K_D_${i}`, char: c, reading: c, type: 'K', genre: 'ダクオン（ガ〜ボ）' }))),
-      ...("パピプペポ".split("").map((c, i) => ({ id: `K_HD_${i}`, char: c, reading: c, type: 'K', genre: 'ハンダクオン（パ〜ポ）' }))),
+      ...("パピプペポ".split("").map((c, i) => ({ id: `K_HD_${i}`, char: c, reading: c, type: 'K', genre: 'ハンダクオン（パ〜ぽ）' }))),
 
-      // 3. 数字
-      ...("123456789".split("").map((c, i) => ({ id: `S_${i}`, char: c, reading: c, type: 'S', genre: 'すうじ（1〜9）' })))
+      // 3. 数字（0を最後に追加）
+      ...("1234567890".split("").map((c, i) => ({ id: `S_${i}`, char: c, reading: c, type: 'S', genre: 'すうじ（1〜0）' })))
     ];
 
     const MODES = ['trace','trace','fade-on-touch','fade-on-touch','blank','blank'];
@@ -296,7 +306,7 @@
     let isSpeakLocked = false;
     let strokeHistories = [[], [], [], [], [], []];
     let globalPenWidth = 8;
-    let currentTab = 'H'; // 現在選択されているタブ（H:ひらがな, K:カタカナ, S:すうじ）
+    let currentTab = 'H';
 
     let savedHistories = [];
     try {
@@ -358,7 +368,6 @@
       changeScreen('KANJI_LIST');
     }
 
-    // 🔄 タブの切り替え処理
     function switchCategoryTab(tabCode) {
       currentTab = tabCode;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -369,7 +378,7 @@
       if(tabCode === 'S') { document.getElementById('tab-s').classList.add('active'); document.getElementById('panel-s').classList.add('active'); }
     }
 
-    // 🗂️ パネル内ボタン構築（ジャンルごとにセクションを分ける）
+    // 🗂️ パネル内ボタン構築（行ごとの改行、数字の2列シンメトリー対応）
     function buildCategoryPanels() {
       const tabs = { 'H': 'panel-h', 'K': 'panel-k', 'S': 'panel-s' };
       
@@ -378,7 +387,6 @@
         panel.innerHTML = '';
         
         const tabData = CHARACTER_DATA.filter(item => item.type === code);
-        // 重複しないようにジャンル一覧を抽出
         const genres = [...new Set(tabData.map(item => item.genre))];
 
         genres.forEach(genreName => {
@@ -390,22 +398,70 @@
           title.innerText = genreName;
           section.appendChild(title);
           
-          const grid = document.createElement('div');
-          grid.className = 'grid-kanji';
-          
-          tabData.filter(item => item.genre === genreName).forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = 'btn-kanji' + (selectedIds.includes(item.id) ? ' selected' : '');
-            btn.innerText = item.char;
-            btn.onclick = () => {
-              if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
-              else selectedIds.push(item.id);
-              buildCategoryPanels(); // 再描画して選択状態を反映
-              updateStartButtonState();
-            };
-            grid.appendChild(btn);
-          });
-          section.appendChild(grid);
+          const items = tabData.filter(item => item.genre === genreName);
+
+          // ✨ 【数字タブ】の場合：1〜5 と 6〜0 の2列シンメトリー
+          if (code === 'S') {
+            const container = document.createElement('div');
+            container.className = 'grid-suuji-container';
+            
+            const col1 = document.createElement('div');
+            col1.className = 'grid-suuji-column';
+            const col2 = document.createElement('div');
+            col2.className = 'grid-suuji-column';
+
+            items.forEach((item, index) => {
+              const btn = document.createElement('button');
+              btn.className = 'btn-suuji-large' + (selectedIds.includes(item.id) ? ' selected' : '');
+              btn.innerText = item.char;
+              btn.onclick = () => {
+                if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
+                else selectedIds.push(item.id);
+                buildCategoryPanels();
+                updateStartButtonState();
+              };
+              
+              if (index < 5) {
+                col1.appendChild(btn); // 1〜5
+              } else {
+                col2.appendChild(btn); // 6〜0
+              }
+            });
+
+            container.appendChild(col1);
+            container.appendChild(col2);
+            section.appendChild(container);
+          } 
+          // ✨ 【ひらがな・カタカナ】の場合：5文字（行）ごとに改行してスキマをあける
+          else {
+            let rowGroup = document.createElement('div');
+            rowGroup.className = 'char-row-group';
+
+            items.forEach((item, index) => {
+              const btn = document.createElement('button');
+              btn.className = 'btn-kanji' + (selectedIds.includes(item.id) ? ' selected' : '');
+              btn.innerText = item.char;
+              btn.onclick = () => {
+                if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
+                else selectedIds.push(item.id);
+                buildCategoryPanels();
+                updateStartButtonState();
+              };
+              rowGroup.appendChild(btn);
+
+              // 5文字ごと、または最後の文字の時にグループをセクションに追加して新しくする
+              // や行（やゆよ）、わ行（わをん）のように5文字未満でも綺麗に行が分かれるよう、
+              // 特定の文字（お、こ、そ、と、の、ほ、も、よ、ん、ゴ、ゾ、ド、ボ、ポ等）の後、または単純に5つ並んだら区切る
+              const isSpecialBreak = (code === 'H' && genreName.includes('せいおん') && "おこそとのほもよん".includes(item.char)) ||
+                                     (code === 'K' && genreName.includes('セイオン') && "オコソトノホモヨン".includes(item.char));
+
+              if ((index + 1) % 5 === 0 || isSpecialBreak || index === items.length - 1) {
+                section.appendChild(rowGroup);
+                rowGroup = document.createElement('div');
+                rowGroup.className = 'char-row-group';
+              }
+            });
+          }
           panel.appendChild(section);
         });
       }
@@ -618,7 +674,6 @@
       }
     }
 
-    // 📸 合成写真生成ロジック
     function captureAndNextKanji() {
       const item = CHARACTER_DATA.find(k => k.id === selectedIds[currentIndex]);
       const virtualCanvas = document.createElement('canvas');
@@ -723,7 +778,6 @@
     }
     function closeOverlay() { document.getElementById('gallery-overlay').style.display = 'none'; }
 
-    // 💡 長押しによる前の一画消去（Undo）
     let longTapTimer = null;
     const bgPanel = document.getElementById('practice-bg-panel');
     function startLongTapCheck(e) {
