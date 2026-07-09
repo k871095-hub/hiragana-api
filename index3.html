@@ -1,294 +1,751 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>もじ・すうじ れんしゅうあぷり</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Klee One', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f7f9fa;
-            text-align: center;
-            user-select: none;
-        }
-        h1 { color: #333; margin-bottom: 10px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <title>もじ・すうじ れんしゅうあぷり（完全版）</title>
+  
+  <!-- クレー One フォントの読み込み -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
 
-        /* タブメニューのスタイル */
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        .tab-button {
-            padding: 12px 24px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            border: 2px solid #ccc;
-            background-color: #fff;
-            border-radius: 25px;
-            transition: all 0.3s;
-        }
-        .tab-button.active {
-            background-color: #ff7f50;
-            color: white;
-            border-color: #ff7f50;
-        }
+  <style>
+    body { 
+      margin: 0; 
+      font-family: 'Klee One', sans-serif; 
+      background-color: #fff7ed; /* もじ・すうじ用 暖かみのある薄オレンジベース */
+      color: #1e293b; 
+      user-select: none; 
+      -webkit-user-select: none;
+      overflow: hidden; 
+      width: 100vw;
+      height: 100vh;
+      overscroll-behavior: none; 
+    }
+    .screen { display: none; padding: 20px; box-sizing: border-box; width: 100vw; height: 100vh; }
+    .active { display: flex; flex-direction: column; }
+    
+    /* 共通ボタン */
+    .btn-main { font-family: 'Klee One', sans-serif; background-color: #ea580c; color: white; font-weight: bold; padding: 15px; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 20px; touch-action: none; }
+    .btn-sub { font-family: 'Klee One', sans-serif; background-color: #94a3b8; color: white; font-weight: bold; padding: 12px; border-radius: 16px; border: none; cursor: pointer; font-size: 16px; touch-action: none; }
+    .btn-triple-tap { font-family: 'Klee One', sans-serif; background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; color: #64748b; text-align: center; touch-action: none; }
+    .btn-action { font-family: 'Klee One', sans-serif; background-color: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; touch-action: none; }
+    .btn-action.clear { background-color: #dc2626; }
 
-        /* コンテンツエリア */
-        .tab-content {
-            display: none;
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .tab-content.active { display: block; }
+    /* ① ホーム画面 */
+    #screen-home { align-items: center; justify-content: center; }
+    .title { font-size: 36px; color: #c2410c; margin-bottom: 10px; font-weight: bold; text-align: center; }
+    .subtitle { font-size: 20px; color: #ea580c; margin-bottom: 40px; font-weight: bold; }
+    .btn-group { width: 240px; display: flex; flex-direction: column; gap: 15px; }
+    .home-sub-row { display: flex; gap: 10px; width: 100%; }
+    .home-sub-row button { flex: 1; }
+    
+    .btn-home-history { background-color: #dc2626 !important; }
+    .btn-home-settings { background-color: #2563eb !important; }
 
-        /* 文字選択ボタンのレイアウト */
-        .char-section {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .char-section h3 {
-            margin: 5px 0;
-            color: #555;
-            border-left: 4px solid #ff7f50;
-            padding-left: 8px;
-            font-size: 16px;
-        }
-        .char-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .char-btn {
-            width: 45px;
-            height: 45px;
-            font-size: 20px;
-            font-family: 'Klee One', sans-serif;
-            font-weight: bold;
-            background: #f0f4f8;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .char-btn:hover { background: #e2e8f0; }
+    /* ② 文字選択画面（タブ切り替え） */
+    #screen-list { max-width: 1100px; margin: 0 auto; height: 100vh; justify-content: space-between; padding-bottom: 10px; }
+    .header { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 12vh; gap: 10px; }
+    
+    /* タブ切り替え用のコンテナ */
+    .tab-container { display: flex; gap: 10px; background-color: #f1f5f9; padding: 6px; border-radius: 30px; border: 1px solid #cbd5e1; }
+    .tab-btn { font-family: 'Klee One', sans-serif; font-weight: bold; font-size: 16px; border: none; background: transparent; padding: 8px 20px; border-radius: 20px; cursor: pointer; color: #64748b; transition: all 0.2s; }
+    .tab-btn.active { background-color: #ea580c; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* 練習エリア（漢字アプリを踏襲する部分） */
-        #practice-area {
-            margin-top: 25px;
-            display: none;
-        }
-        .canvas-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto;
-            border: 3px solid #333;
-            background: #fff;
-        }
-        /* なぞり書き用のお手本（背景に薄く表示） */
-        #bg-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 200px;
-            color: rgba(0, 0, 0, 0.08); /* 薄いグレー */
-            pointer-events: none;
-            font-family: 'Klee One', sans-serif;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-        }
-        .controls { margin-top: 15px; }
-        .btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        .btn-clear { background: #e53e3e; color: white; }
-        .btn-back { background: #718096; color: white; }
-    </style>
+    .header-tools { display: flex; gap: 8px; }
+    
+    /* スクロールボックスとタブ中身 */
+    .scroll-box-wrapper { height: 68vh; background-color: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; box-sizing: border-box; overflow: hidden; }
+    .tab-content-panel { height: 100%; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
+    .tab-content-panel.active { display: block; }
+    
+    .genre-section { margin-bottom: 25px; }
+    .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 10px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; }
+    .grid-kanji { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+    
+    .btn-kanji { font-family: 'Klee One', serif; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; }
+    .btn-kanji.selected { background-color: #ffedd5; border-color: #ea580c; }
+    .footer-list-area { height: 12vh; display: flex; align-items: center; justify-content: center; }
+
+    /* ③ 練習画面 */
+    #screen-practice { justify-content: flex-start; gap: 12px; padding: 15px; }
+    .top-panel { height: 22vh; display: flex; background-color: white; border-radius: 16px; padding: 10px 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); justify-content: space-around; align-items: center; border: 1px solid #ffedd5; box-sizing: border-box; gap: 8px; }
+    .model-text { font-size: 85px; font-family: 'Klee One', serif; font-weight: bold; color: #0f172a; line-height: 1; }
+    
+    .info-container { display: flex; align-items: center; gap: 10px; }
+    .info-box { background-color: #ffedd5; padding: 6px 12px; border-radius: 12px; border: 1px solid #fed7aa; min-width: 150px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+    .info-reading { font-size: 18px; font-weight: bold; color: #1e293b; background-color: white; margin: 3px 0 0 0; padding: 4px; border-radius: 6px; white-space: nowrap; }
+    
+    .btn-speak-master { font-family: 'Klee One', sans-serif; background-color: #e0f2fe; border: 2px solid #bae6fd; border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: bold; color: #0369a1; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; line-height: 1.2; touch-action: none; }
+    .btn-speak-master:disabled { opacity: 0.5; cursor: not-allowed; background-color: #f1f5f9; border-color: #e2e8f0; color: #94a3b8; }
+
+    .tool-box { display: flex; flex-direction: column; gap: 8px; }
+    .btn-tool { font-family: 'Klee One', sans-serif; padding: 8px 16px; font-size: 14px; font-weight: bold; border: 2px solid #cbd5e1; background-color: white; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; touch-action: none; }
+    .btn-tool.active { background-color: #3b82f6; color: white; border-color: #2563eb; }
+
+    /* 下部パネル */
+    .bottom-panel { height: 60vh; background-color: rgba(241, 245, 249, 0.6); border-radius: 16px; padding: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .grid-cells { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; width: 100%; height: 100%; }
+    
+    .cell-container { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #cbd5e1; border-radius: 12px; background-color: #fff; position: relative; box-sizing: border-box; height: 100%; }
+    .cell-num { position: absolute; top: 6px; left: 10px; font-size: 13px; font-weight: bold; color: #94a3b8; z-index: 20; }
+    
+    .canvas-area { position: relative; width: 160px; height: 160px; border: 1px solid #e2e8f0; background-color: #f8fafc; border-radius: 8px; overflow: hidden; }
+    .canvas-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 110px; color: #e2e8f0; font-family: 'Klee One', serif; pointer-events: none; transition: opacity 0.1s ease; }
+    .guide-h { position: absolute; top: 50%; left: 0; width: 100%; border-top: 1px dashed #e2e8f0; pointer-events: none; }
+    .guide-v { position: absolute; left: 50%; top: 0; height: 100%; border-left: 1px dashed #e2e8f0; pointer-events: none; }
+    canvas { position: absolute; inset: 0; z-index: 10; cursor: crosshair; touch-action: none; }
+    
+    .footer-area { height: 8vh; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    #btn-next { font-family: 'Klee One', sans-serif; width: 100%; max-width: 450px; background-color: #ea580c; color: white; font-weight: bold; padding: 10px; border-radius: 30px; font-size: 20px; border: none; cursor: pointer; box-shadow: 0 10px 15px rgba(234,88,12,0.3); display: none; touch-action: none; }
+    #text-guide { font-size: 15px; color: #94a3b8; margin: 0; font-weight: bold; }
+
+    /* ④ りれき一覧画面 */
+    #screen-history-gallery { max-width: 1100px; margin: 0 auto; height: 100vh; justify-content: space-between; padding-bottom: 10px; }
+    .gallery-header { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 12vh; gap: 10px; box-sizing: border-box; }
+    .gallery-title { font-size: 22px; color: #c2410c; font-weight: bold; margin: 0; text-align: center; }
+    .gallery-scroll { height: 84vh; overflow-y: auto; background-color: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; box-sizing: border-box; width: 100%; -webkit-overflow-scrolling: touch; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .gallery-item { border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: #fff; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; position: relative; }
+    .gallery-item:active { transform: scale(0.95); }
+    .gallery-item img { width: 100%; height: auto; display: block; }
+    .gallery-item-label { background-color: #f1f5f9; text-align: center; padding: 5px; font-weight: bold; font-size: 13px; color: #475569; border-top: 1px solid #cbd5e1; line-height: 1.3; }
+    .gallery-empty { text-align: center; color: #94a3b8; font-size: 18px; font-weight: bold; width: 100%; padding-top: 100px; grid-column: span 4; }
+
+    /* 全画面共通オーバーレイ */
+    .overlay { display: none; position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .overlay-content { max-width: 90vw; max-height: 85vh; background-color: white; border-radius: 20px; padding: 20px; box-sizing: border-box; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; align-items: center; }
+    .overlay-content img { max-width: 100%; max-height: 70vh; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 10px; }
+    .overlay-close { position: absolute; top: -20px; right: -20px; background-color: #dc2626; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+    .overlay-label { margin-top: 12px; font-size: 20px; font-weight: bold; color: #1e293b; text-align: center; }
+
+    /* 設定ポップアップ */
+    .settings-box { width: 320px; padding: 10px 5px; text-align: center; }
+    .settings-title { font-size: 22px; color: #c2410c; font-weight: bold; margin: 0 0 20px 0; }
+    .settings-row { margin-bottom: 25px; text-align: left; }
+    .settings-label { font-size: 16px; font-weight: bold; color: #475569; margin-bottom: 8px; display: block; }
+    .slider-container { display: flex; align-items: center; gap: 15px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
+    input[type="range"] { flex: 1; height: 8px; border-radius: 4px; background: #cbd5e1; accent-color: #3b82f6; cursor: pointer; touch-action: auto !important; }
+    .preview-circle-box { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .preview-circle { background-color: #333333; border-radius: 50%; transition: width 0.1s, height 0.1s; }
+  </style>
 </head>
 <body>
 
-    <h1>✏️ もじ・すうじ れんしゅう</h1>
+  <div id="screen-home" class="screen active">
+    <h1 class="title">もじ・すうじ れんしゅう</h1>
+    <div class="subtitle">✏️ ひらがな・カタカナ・すうじ ✏️</div>
+    <div class="btn-group">
+      <button class="btn-main" onclick="goToTransit()">スタート 🚀</button>
+      <div class="home-sub-row">
+        <button class="btn-sub btn-home-history" onclick="openHistoryGallery()">りれき 📷</button>
+        <button class="btn-sub btn-home-settings" onclick="openSettingsModal()">せってい ⚙️</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- タブボタン -->
-    <div class="tab-container">
-        <button class="tab-button active" onclick="switchTab('hiragana')">ひらがな</button>
-        <button class="tab-button" onclick="switchTab('katakana')">カタカナ</button>
-        <button class="tab-button" onclick="switchTab('suuji')">すうじ</button>
+  <div id="screen-list" class="screen">
+    <div class="header">
+      <button class="btn-triple-tap" onclick="handleTripleTap(this, () => { exitAndResetKanji(); changeScreen('HOME'); })">🏠 もどる<br><span style="font-size:9px;color:#94a3b8;">(3かい とんとん)</span></button>
+      
+      <!-- 🔄 切り替えタブコンテナ -->
+      <div class="tab-container">
+        <button id="tab-h" class="tab-btn active" onclick="switchCategoryTab('H')">ひらがな</button>
+        <button id="tab-k" class="tab-btn" onclick="switchCategoryTab('K')">カタカナ</button>
+        <button id="tab-s" class="tab-btn" onclick="switchCategoryTab('S')">すうじ</button>
+      </div>
+
+      <div class="header-tools">
+        <button class="btn-action" onclick="selectAllCurrentTab()">すべて選ぶ</button>
+        <button class="btn-action clear" onclick="clearAllKanji()">クリア</button>
+      </div>
+    </div>
+    
+    <!-- スクロール箱の中に、各カテゴリのパネルを内包 -->
+    <div class="scroll-box-wrapper">
+      <div id="panel-h" class="tab-content-panel active"></div>
+      <div id="panel-k" class="tab-content-panel"></div>
+      <div id="panel-s" class="tab-content-panel"></div>
+    </div>
+    
+    <div class="footer-list-area">
+      <button class="btn-main" id="btn-start-practice" onclick="startPractice()" disabled style="background-color: #cbd5e1; color: #64748b; cursor: not-allowed; padding: 12px 50px; border-radius: 30px;">れんしゅうを はじめる (0文字)</button>
+    </div>
+  </div>
+
+  <div id="screen-practice" class="screen">
+    <div class="top-panel">
+      <button class="btn-triple-tap" onclick="handleTripleTap(this, () => { exitAndResetKanji(); changeScreen('KANJI_LIST'); })">↩ やめる<br><span style="font-size:9px;color:#94a3b8;">(3かい とんとん)</span></button>
+
+      <div style="text-align: center;">
+        <span class="model-text" id="practice-model">あ</span>
+      </div>
+
+      <div class="info-container">
+        <div class="info-box">
+          <h3 style="margin:0; font-size:12px; color:#c2410c;">なまえ</h3>
+          <p class="info-reading" id="practice-reading">あ</p>
+          <p id="practice-progress" style="font-size:11px; color:#64748b; margin:4px 0 0 0;">進捗: 1 / 1</p>
+        </div>
+        <button id="btn-master-speak" class="btn-speak-master" onclick="triggerMasterSpeak()">
+          おとをきく<br>🔊
+        </button>
+      </div>
+
+      <div class="tool-box">
+        <button id="tool-pen" class="btn-tool active" onclick="setTool('pen')">✏️ ペン</button>
+        <button id="tool-eraser" class="btn-tool" onclick="setTool('eraser')">🧽 けしごむ</button>
+      </div>
     </div>
 
-    <!-- ひらがなタブ -->
-    <div id="hiragana" class="tab-content active">
-        <div class="char-section">
-            <h3>せいおん（あ〜わ）</h3>
-            <div class="char-grid" id="h-seion"></div>
-        </div>
-        <div class="char-section">
-            <h3>だくおん・はんだくおん（が・ぱ〜）</h3>
-            <div class="char-grid" id="h-dakuon"></div>
-        </div>
+    <!-- 🌟 前作そのまま！恐怖の（？）6連続練習パネル -->
+    <div class="bottom-panel" id="practice-bg-panel">
+      <div class="grid-cells" id="cells-container"></div>
     </div>
 
-    <!-- カタカナタブ -->
-    <div id="katakana" class="tab-content">
-        <div class="char-section">
-            <h3>セイオン（ア〜ワ）</h3>
-            <div class="char-grid" id="k-seion"></div>
-        </div>
-        <div class="char-section">
-            <h3>ダクオン・ハンダクオン（ガ・パ〜）</h3>
-            <div class="char-grid" id="k-dakuon"></div>
-        </div>
+    <div class="footer-area">
+      <button id="btn-next" onclick="captureAndNextKanji()">つぎの もじへ ➡️</button>
+      <p id="text-guide">6この ます ぜんぶに かいてみよう！</p>
     </div>
+  </div>
 
-    <!-- すうじタブ -->
-    <div id="suuji" class="tab-content">
-        <div class="char-section">
-            <h3>かず（1 〜 9）</h3>
-            <div class="char-grid" id="s-numbers"></div>
-        </div>
+  <div id="screen-history-gallery" class="screen">
+    <div class="gallery-header">
+      <button class="btn-sub" onclick="changeScreen('HOME')" style="padding: 12px 20px;">🏠 ホームにもどる</button>
+      <h2 class="gallery-title">れんしゅうの りれき 📷</h2>
+      <button class="btn-action clear" onclick="clearHistoryGallery()" style="padding: 12px 20px; border-radius: 12px;">りれきを消す</button>
     </div>
-
-    <!-- 練習エリア（文字選択後に表示） -->
-    <div id="practice-area">
-        <h2 id="current-char-title">「あ」のれんしゅう</h2>
-        <div class="canvas-container">
-            <div id="bg-text">あ</div>
-            <canvas id="paint-canvas" width="300" height="300"></canvas>
-        </div>
-        <div class="controls">
-            <button class="btn btn-clear" onclick="clearCanvas()">ぜんぶ消す</button>
-            <button class="btn btn-back" onclick="backToSelect()">もどる</button>
-        </div>
+    <div class="gallery-scroll">
+      <div class="gallery-grid" id="gallery-items-grid"></div>
     </div>
+  </div>
 
-    <script>
-        // データ定義
-        const data = {
-            hiragana: {
-                seion: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split(""),
-                dakuon: "がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ".split("")
-            },
-            katakana: {
-                seion: "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン".split(""),
-                dakuon: "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ".split("")
-            },
-            suuji: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-        };
+  <div id="gallery-overlay" class="overlay" onclick="closeOverlay()">
+    <div class="overlay-content" onclick="event.stopPropagation()">
+      <button class="overlay-close" onclick="closeOverlay()">❌</button>
+      <img id="overlay-img" src="" alt="拡大表示">
+      <div id="overlay-label" class="overlay-label">文字の名前</div>
+    </div>
+  </div>
 
-        // ボタンの動的生成
-        function createButtons() {
-            const createGrid = (id, chars) => {
-                const grid = document.getElementById(id);
-                chars.forEach(c => {
-                    const btn = document.createElement("button");
-                    btn.className = "char-btn";
-                    btn.innerText = c;
-                    btn.onclick = () => startPractice(c);
-                    grid.appendChild(btn);
-                });
+  <div id="settings-overlay" class="overlay" onclick="closeSettingsModal()">
+    <div class="overlay-content" onclick="event.stopPropagation()">
+      <button class="overlay-close" onclick="closeSettingsModal()">❌</button>
+      <div class="settings-box">
+        <h2 class="settings-title">あぷりの せってい ⚙️</h2>
+        
+        <div class="settings-row">
+          <label class="settings-label">✏️ ペンの ふとさ</label>
+          <div class="slider-container">
+            <input type="range" id="pen-width-slider" min="2" max="20" value="8" oninput="updatePenWidthPreview(this.value)">
+            <div class="preview-circle-box">
+              <div id="pen-preview-circle" class="preview-circle"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="closeSettingsModal()" style="width:100%; padding:10px; font-size:16px; border-radius:12px;">とじる</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // iPad iOS スクロールガード
+    (function() {
+      document.addEventListener('touchmove', function(e) {
+        let isScrollableArea = e.target.closest('.tab-content-panel') || e.target.closest('.gallery-scroll');
+        if (!isScrollableArea) { e.preventDefault(); }
+      }, { passive: false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(e) {
+        let now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300 && !e.target.classList.contains('btn-triple-tap')) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    })();
+
+    // 📄 ひらがな・カタカナ・すうじ の定義データ（全文字網羅）
+    const CHARACTER_DATA = [
+      // 1. ひらがな（清音・濁音・半濁音）
+      ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
+      ...("がぎぐげござじずぜぞだぢづでどばびぶべぼ".split("").map((c, i) => ({ id: `H_D_${i}`, char: c, reading: c, type: 'H', genre: 'だくおん（が〜ぼ）' }))),
+      ...("ぱぴぷぺぽ".split("").map((c, i) => ({ id: `H_HD_${i}`, char: c, reading: c, type: 'H', genre: 'はんだくおん（ぱ〜ぽ）' }))),
+
+      // 2. カタカナ（清音・濁音・半濁音）
+      ...("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミむメモヤユヨラリルレロワヲン".split("").map((c, i) => ({ id: `K_S_${i}`, char: c, reading: c, type: 'K', genre: 'セイオン（ア〜ン）' }))),
+      ...("ガギグゲゴザジズゼゾダヂヅデドバビブベボ".split("").map((c, i) => ({ id: `K_D_${i}`, char: c, reading: c, type: 'K', genre: 'ダクオン（ガ〜ボ）' }))),
+      ...("パピプペポ".split("").map((c, i) => ({ id: `K_HD_${i}`, char: c, reading: c, type: 'K', genre: 'ハンダクオン（パ〜ポ）' }))),
+
+      // 3. 数字
+      ...("123456789".split("").map((c, i) => ({ id: `S_${i}`, char: c, reading: c, type: 'S', genre: 'すうじ（1〜9）' })))
+    ];
+
+    const MODES = ['trace','trace','fade-on-touch','fade-on-touch','blank','blank'];
+    const MAX_HISTORY_COUNT = 50;
+    
+    let selectedIds = [];
+    let currentIndex = 0;
+    let cellStates = new Array(6).fill(false);
+    let currentTool = 'pen';
+    let tapCount = 0;
+    let tapTimer = null;
+    let isSpeakLocked = false;
+    let strokeHistories = [[], [], [], [], [], []];
+    let globalPenWidth = 8;
+    let currentTab = 'H'; // 現在選択されているタブ（H:ひらがな, K:カタカナ, S:すうじ）
+
+    let savedHistories = [];
+    try {
+      const localData = localStorage.getItem('moji_practice_history');
+      if (localData) savedHistories = JSON.parse(localData);
+    } catch(e) { console.error(e); }
+
+    function saveToLocalStorage() {
+      try { localStorage.setItem('moji_practice_history', JSON.stringify(savedHistories)); } catch(e) { console.error(e); }
+    }
+
+    function openSettingsModal() {
+      document.getElementById('pen-width-slider').value = globalPenWidth;
+      updatePenWidthPreview(globalPenWidth);
+      document.getElementById('settings-overlay').style.display = 'flex';
+    }
+    function closeSettingsModal() { document.getElementById('settings-overlay').style.display = 'none'; }
+    function updatePenWidthPreview(val) {
+      globalPenWidth = parseInt(val, 10);
+      const circle = document.getElementById('pen-preview-circle');
+      circle.style.width = `${globalPenWidth}px`;
+      circle.style.height = `${globalPenWidth}px`;
+    }
+
+    function handleTripleTap(buttonElement, callback) {
+      tapCount++;
+      if(tapCount === 1) buttonElement.style.backgroundColor = '#fed7aa';
+      if(tapCount === 2) buttonElement.style.backgroundColor = '#ffedd5';
+      clearTimeout(tapTimer);
+      if (tapCount === 3) {
+        tapCount = 0;
+        buttonElement.style.backgroundColor = '';
+        callback();
+      } else {
+        tapTimer = setTimeout(() => { tapCount = 0; buttonElement.style.backgroundColor = ''; }, 400);
+      }
+    }
+
+    function setTool(tool) {
+      currentTool = tool;
+      document.getElementById('tool-pen').classList.toggle('active', tool === 'pen');
+      document.getElementById('tool-eraser').classList.toggle('active', tool === 'eraser');
+    }
+
+    function changeScreen(phase) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      if(phase === 'HOME') document.getElementById('screen-home').classList.add('active');
+      if(phase === 'KANJI_LIST') {
+        document.getElementById('screen-list').classList.add('active');
+        buildCategoryPanels();
+        switchCategoryTab(currentTab);
+      }
+      if(phase === 'PRACTICE') document.getElementById('screen-practice').classList.add('active');
+      if(phase === 'HISTORY_GALLERY') document.getElementById('screen-history-gallery').classList.add('active');
+    }
+
+    function goToTransit() {
+      if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      changeScreen('KANJI_LIST');
+    }
+
+    // 🔄 タブの切り替え処理
+    function switchCategoryTab(tabCode) {
+      currentTab = tabCode;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+
+      if(tabCode === 'H') { document.getElementById('tab-h').classList.add('active'); document.getElementById('panel-h').classList.add('active'); }
+      if(tabCode === 'K') { document.getElementById('tab-k').classList.add('active'); document.getElementById('panel-k').classList.add('active'); }
+      if(tabCode === 'S') { document.getElementById('tab-s').classList.add('active'); document.getElementById('panel-s').classList.add('active'); }
+    }
+
+    // 🗂️ パネル内ボタン構築（ジャンルごとにセクションを分ける）
+    function buildCategoryPanels() {
+      const tabs = { 'H': 'panel-h', 'K': 'panel-k', 'S': 'panel-s' };
+      
+      for (let code in tabs) {
+        const panel = document.getElementById(tabs[code]);
+        panel.innerHTML = '';
+        
+        const tabData = CHARACTER_DATA.filter(item => item.type === code);
+        // 重複しないようにジャンル一覧を抽出
+        const genres = [...new Set(tabData.map(item => item.genre))];
+
+        genres.forEach(genreName => {
+          const section = document.createElement('div');
+          section.className = 'genre-section';
+          
+          const title = document.createElement('h3');
+          title.className = 'genre-title';
+          title.innerText = genreName;
+          section.appendChild(title);
+          
+          const grid = document.createElement('div');
+          grid.className = 'grid-kanji';
+          
+          tabData.filter(item => item.genre === genreName).forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-kanji' + (selectedIds.includes(item.id) ? ' selected' : '');
+            btn.innerText = item.char;
+            btn.onclick = () => {
+              if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
+              else selectedIds.push(item.id);
+              buildCategoryPanels(); // 再描画して選択状態を反映
+              updateStartButtonState();
             };
+            grid.appendChild(btn);
+          });
+          section.appendChild(grid);
+          panel.appendChild(section);
+        });
+      }
+    }
 
-            createGrid("h-seion", data.hiragana.seion);
-            createGrid("h-dakuon", data.hiragana.dakuon);
-            createGrid("k-seion", data.katakana.seion);
-            createGrid("k-dakuon", data.katakana.dakuon);
-            createGrid("s-numbers", data.suuji);
+    function selectAllCurrentTab() {
+      const currentTabIds = CHARACTER_DATA.filter(item => item.type === currentTab).map(item => item.id);
+      currentTabIds.forEach(id => {
+        if(!selectedIds.includes(id)) selectedIds.push(id);
+      });
+      buildCategoryPanels();
+      updateStartButtonState();
+    }
+
+    function clearAllKanji() {
+      selectedIds = [];
+      buildCategoryPanels();
+      updateStartButtonState();
+    }
+
+    function updateStartButtonState() {
+      const startBtn = document.getElementById('btn-start-practice');
+      if(selectedIds.length > 0) {
+        startBtn.disabled = false;
+        startBtn.style.backgroundColor = '#ea580c';
+        startBtn.style.color = 'white';
+        startBtn.style.cursor = 'pointer';
+        startBtn.innerText = `れんしゅうを はじめる (${selectedIds.length}もじ)`;
+      } else {
+        startBtn.disabled = true;
+        startBtn.style.backgroundColor = '#cbd5e1';
+        startBtn.style.color = '#64748b';
+        startBtn.style.cursor = 'not-allowed';
+        startBtn.innerText = 'れんしゅうを はじめる (0もじ)';
+      }
+    }
+
+    function startPractice() {
+      currentIndex = 0;
+      setTool('pen');
+      initPracticePage();
+      changeScreen('PRACTICE');
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'ja-JP'; u.rate = 0.8;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function triggerMasterSpeak() {
+      if (isSpeakLocked) return;
+      const item = CHARACTER_DATA.find(k => k.id === selectedIds[currentIndex]);
+      if (!item) return;
+
+      speak(item.reading);
+
+      isSpeakLocked = true;
+      const speakBtn = document.getElementById('btn-master-speak');
+      if (speakBtn) speakBtn.disabled = true;
+      setTimeout(() => {
+        isSpeakLocked = false;
+        if (speakBtn) speakBtn.disabled = false;
+      }, 1500);
+    }
+
+    function initPracticePage() {
+      cellStates = new Array(6).fill(false);
+      strokeHistories = [[], [], [], [], [], []];
+      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('text-guide').style.display = 'block';
+
+      const item = CHARACTER_DATA.find(k => k.id === selectedIds[currentIndex]);
+      document.getElementById('practice-model').innerText = item.char;
+      document.getElementById('practice-reading').innerText = item.reading;
+      document.getElementById('practice-progress').innerText = `進捗: ${currentIndex + 1} / ${selectedIds.length}`;
+      
+      speak(item.reading);
+
+      const container = document.getElementById('cells-container');
+      container.innerHTML = '';
+      
+      MODES.forEach((mode, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell-container';
+        cell.innerHTML = `
+          <span class="cell-num">${idx + 1}</span>
+          <div class="canvas-area">
+            <div class="canvas-bg" id="bg-${idx}" style="display: ${mode === 'blank' ? 'none' : 'flex'}">${item.char}</div>
+            <div class="guide-h"></div><div class="guide-v"></div>
+            <canvas id="canvas-${idx}"></canvas>
+          </div>
+        `;
+        container.appendChild(cell);
+        setupCanvas(idx, mode);
+      });
+    }
+
+    function setupCanvas(idx, mode) {
+      const canvas = document.getElementById(`canvas-${idx}`);
+      canvas.width = 160; canvas.height = 160;
+      const ctx = canvas.getContext('2d');
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+      let drawing = false;
+      let currentStroke = [];
+
+      function start(e) {
+        e.preventDefault();
+        if(currentTool === 'pen' && mode === 'fade-on-touch') {
+          document.getElementById(`bg-${idx}`).style.opacity = '0';
         }
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const pos = { x: clientX - rect.left, y: clientY - rect.top };
+        
+        ctx.beginPath(); 
+        ctx.moveTo(pos.x, pos.y);
 
-        // タブ切り替え
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // クリックされたタブをアクティブに
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-            
-            // 練習中なら選択画面に戻す
-            backToSelect();
+        let lineWidth = globalPenWidth; 
+        let isEraser = false;
+        if (currentTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          lineWidth = 20; 
+          isEraser = true;
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = '#333333';
         }
+        ctx.lineWidth = lineWidth;
 
-        // 練習開始
-        function startPractice(char) {
-            document.getElementById("current-char-title").innerText = `「${char}」のれんしゅう`;
-            document.getElementById("bg-text").innerText = char;
-            document.getElementById("practice-area").style.display = "block";
-            clearCanvas();
+        currentStroke = { isEraser: isEraser, lineWidth: lineWidth, points: [pos] };
+      }
+
+      function move(e) {
+        if(!drawing) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const pos = { x: clientX - rect.left, y: clientY - rect.top };
+        
+        ctx.lineTo(pos.x, pos.y); 
+        ctx.stroke();
+        currentStroke.points.push(pos);
+      }
+
+      function end() {
+        if(!drawing) return;
+        drawing = false; 
+        ctx.closePath();
+        
+        if(mode === 'fade-on-touch') { document.getElementById(`bg-${idx}`).style.opacity = '1'; }
+        if(currentStroke.points.length > 0) { strokeHistories[idx].push(currentStroke); }
+        checkWritten(idx);
+      }
+
+      canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move);
+      canvas.addEventListener('mouseup', end); canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false});
+      canvas.addEventListener('touchend', end);
+    }
+
+    function redrawCanvas(idx) {
+      const canvas = document.getElementById(`canvas-${idx}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 160, 160);
+
+      strokeHistories[idx].forEach(stroke => {
+        if (stroke.points.length === 0) return;
+        ctx.beginPath();
+        if (stroke.isEraser) ctx.globalCompositeOperation = 'destination-out';
+        else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = '#333333'; }
+        ctx.lineWidth = stroke.lineWidth;
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) { ctx.lineTo(stroke.points[i].x, stroke.points[i].y); }
+        ctx.stroke();
+        ctx.closePath();
+      });
+    }
+
+    function checkWritten(idx) {
+      const canvas = document.getElementById(`canvas-${idx}`);
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, 160, 160).data;
+      let count = 0;
+      for (let i = 3; i < imgData.length; i += 4) { if (imgData[i] > 0) count++; }
+      cellStates[idx] = count > 50;
+      updateFooter();
+    }
+
+    function updateFooter() {
+      const allDone = cellStates.every(s => s === true);
+      const nextBtn = document.getElementById('btn-next');
+      const guideText = document.getElementById('text-guide');
+      
+      if(allDone) {
+        nextBtn.innerText = currentIndex === selectedIds.length - 1 ? 'できた！！おわる 🎉' : 'つぎの もじへ ➡️';
+        nextBtn.style.display = 'block';
+        guideText.style.display = 'none';
+      } else {
+        nextBtn.style.display = 'none';
+        guideText.style.display = 'block';
+      }
+    }
+
+    // 📸 合成写真生成ロジック
+    function captureAndNextKanji() {
+      const item = CHARACTER_DATA.find(k => k.id === selectedIds[currentIndex]);
+      const virtualCanvas = document.createElement('canvas');
+      virtualCanvas.width = 600; virtualCanvas.height = 450;
+      const vCtx = virtualCanvas.getContext('2d');
+
+      vCtx.fillStyle = '#ffffff'; vCtx.fillRect(0, 0, 600, 450);
+      vCtx.fillStyle = '#c2410c'; vCtx.font = 'bold 28px "Klee One", sans-serif';
+      vCtx.fillText(`「${item.char}」の れんしゅう`, 30, 45);
+
+      vCtx.strokeStyle = '#e2e8f0'; vCtx.lineWidth = 2;
+      vCtx.beginPath(); vCtx.moveTo(20, 65); vCtx.lineTo(580, 65); vCtx.stroke();
+
+      for (let i = 0; i < 6; i++) {
+        const originalCanvas = document.getElementById(`canvas-${i}`);
+        if (originalCanvas) {
+          const col = i % 3; const row = Math.floor(i / 3);
+          const x = 30 + col * 190; const y = 90 + row * 170;
+
+          vCtx.strokeStyle = '#cbd5e1'; vCtx.lineWidth = 1;
+          vCtx.strokeRect(x, y, 160, 160);
+
+          vCtx.fillStyle = '#94a3b8'; vCtx.font = 'bold 14px "Klee One", sans-serif';
+          vCtx.fillText(i + 1, x + 8, y + 18);
+
+          if (MODES[i] !== 'blank') {
+            vCtx.fillStyle = '#e2e8f0'; vCtx.font = '110px "Klee One", serif';
+            vCtx.textAlign = 'center'; vCtx.textBaseline = 'middle';
+            vCtx.fillText(item.char, x + 80, y + 80);
+            vCtx.textAlign = 'left'; vCtx.textBaseline = 'alphabetic';
+          }
+
+          vCtx.strokeStyle = '#f1f5f9'; vCtx.setLineDash([4, 4]);
+          vCtx.beginPath(); vCtx.moveTo(x + 80, y); vCtx.lineTo(x + 80, y + 160); vCtx.stroke();
+          vCtx.beginPath(); vCtx.moveTo(x, y + 80); vCtx.lineTo(x + 160, y + 80); vCtx.stroke();
+          vCtx.setLineDash([]);
+
+          vCtx.drawImage(originalCanvas, x, y);
         }
+      }
 
-        function backToSelect() {
-            document.getElementById("practice-area").style.display = "none";
-        }
+      const imgDataUrl = virtualCanvas.toDataURL('image/png');
+      const now = new Date();
+      const dateString = `${now.getMonth() + 1}月${now.getDate()}日`;
+      const timeString = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
-        // --- キャンバスのお絵かき処理（漢字アプリのロジックをここに統合） ---
-        const canvas = document.getElementById("paint-canvas");
-        const ctx = canvas.getContext("2d");
-        let drawing = false;
+      savedHistories.unshift({ char: item.char, imageSrc: imgDataUrl, dateLabel: dateString, timeLabel: timeString });
+      if (savedHistories.length > MAX_HISTORY_COUNT) savedHistories = savedHistories.slice(0, MAX_HISTORY_COUNT);
+      
+      saveToLocalStorage();
+      nextKanji();
+    }
 
-        // 簡易的な描画ロジック（マウス・タッチ対応）
-        function setupCanvas() {
-            ctx.lineWidth = 12;
-            ctx.lineCap = "round";
-            ctx.strokeStyle = "#333";
+    function nextKanji() {
+      if (currentIndex < selectedIds.length - 1) {
+        currentIndex++;
+        initPracticePage();
+      } else {
+        alert('ぜんぶクリア！よくがんばったね！💮');
+        exitAndResetKanji();
+        changeScreen('KANJI_LIST');
+      }
+    }
 
-            const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
-            };
+    function exitAndResetKanji() {
+      selectedIds = [];
+      updateStartButtonState();
+    }
 
-            const start = (e) => { drawing = true; draw(e); };
-            const end = () => { drawing = false; ctx.beginPath(); };
-            const draw = (e) => {
-                if (!drawing) return;
-                e.preventDefault();
-                const pos = getPos(e);
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-            };
+    function openHistoryGallery() {
+      changeScreen('HISTORY_GALLERY');
+      const grid = document.getElementById('gallery-items-grid');
+      grid.innerHTML = '';
 
-            canvas.addEventListener("mousedown", start);
-            canvas.addEventListener("mouseup", end);
-            canvas.addEventListener("mousemove", draw);
-            canvas.addEventListener("touchstart", start);
-            canvas.addEventListener("touchend", end);
-            canvas.addEventListener("touchmove", draw);
-        }
+      if (savedHistories.length === 0) {
+        grid.innerHTML = `<div class="gallery-empty">まだ練習の履歴がありません。<br>練習が終わるとここに自動で保存されるよ！✨</div>`;
+        return;
+      }
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+      savedHistories.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'gallery-item';
+        itemDiv.onclick = () => openOverlay(item);
+        itemDiv.innerHTML = `
+          <img src="${item.imageSrc}" alt="${item.char}">
+          <div class="gallery-item-label">${item.char}<br><span style="font-size:10px;color:#64748b;">${item.dateLabel} ${item.timeLabel}</span></div>
+        `;
+        grid.appendChild(itemDiv);
+      });
+    }
 
-        // 初期化
-        createButtons();
-        setupCanvas();
-    </script>
+    function clearHistoryGallery() {
+      if (confirm('これまで練習したりれきをぜんぶ消してもいいですか？')) {
+        savedHistories = []; saveToLocalStorage(); openHistoryGallery();
+      }
+    }
+
+    function openOverlay(item) {
+      document.getElementById('overlay-img').src = item.imageSrc;
+      document.getElementById('overlay-label').innerText = `「${item.char}」の練習結果（${item.dateLabel} ${item.timeLabel}）`;
+      document.getElementById('gallery-overlay').style.display = 'flex';
+    }
+    function closeOverlay() { document.getElementById('gallery-overlay').style.display = 'none'; }
+
+    // 💡 長押しによる前の一画消去（Undo）
+    let longTapTimer = null;
+    const bgPanel = document.getElementById('practice-bg-panel');
+    function startLongTapCheck(e) {
+      if (e.target.tagName === 'CANVAS' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+      clearTimeout(longTapTimer);
+      longTapTimer = setTimeout(() => { undoLastStrokeGlobal(); }, 1000);
+    }
+    function cancelLongTapCheck() { clearTimeout(longTapTimer); }
+    function undoLastStrokeGlobal() {
+      let targetCellIdx = -1;
+      for (let i = 0; i < 6; i++) { if (strokeHistories[i].length > 0) targetCellIdx = i; }
+      if (targetCellIdx !== -1) {
+        strokeHistories[targetCellIdx].pop();
+        redrawCanvas(targetCellIdx);
+        checkWritten(targetCellIdx);
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    }
+
+    bgPanel.addEventListener('mousedown', startLongTapCheck); bgPanel.addEventListener('mouseup', cancelLongTapCheck);
+    bgPanel.addEventListener('mouseleave', cancelLongTapCheck); bgPanel.addEventListener('touchstart', startLongTapCheck);
+    bgPanel.addEventListener('touchend', cancelLongTapCheck);
+  </script>
 </body>
 </html>
