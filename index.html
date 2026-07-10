@@ -283,7 +283,7 @@
     // 📄 ひらがな・カタカナ・すうじ の定義データ
     const CHARACTER_DATA = [
       // 1. ひらがな（清音・濁音・半濁音）
-      ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもや　ゆ　よらりるれろわをん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
+      ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもや　ゆ　よらりるれろわ　を　ん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
       ...("がぎぐげござじずぜぞだぢづでどばびぶべぼ".split("").map((c, i) => ({ id: `H_D_${i}`, char: c, reading: c, type: 'H', genre: 'だくおん（が〜ぼ）' }))),
       ...("ぱぴぷぺぽ".split("").map((c, i) => ({ id: `H_HD_${i}`, char: c, reading: c, type: 'H', genre: 'はんだくおん（ぱ〜ぽ）' }))),
 
