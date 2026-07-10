@@ -64,7 +64,7 @@
     .genre-section { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
     .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 15px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; align-self: flex-start; }
     
-    /* 🌟 ピラミッド化を防ぐため、全体のコンテナを固定幅にして左詰めに並べる */
+    /* グリッドコンテナ */
     .char-grid-container { display: flex; flex-direction: column; gap: 10px; width: 330px; margin: 0 auto; }
     .char-row-group { display: flex; gap: 10px; justify-content: flex-start; width: 100%; }
     
@@ -75,6 +75,9 @@
     .btn-kanji { font-family: 'Klee One', serif; width: 58px; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-kanji.selected { background-color: #ffedd5; border-color: #ea580c; }
     
+    /* 🌟 空白ボタンを透明にするスタイル */
+    .btn-kanji.empty-space { background-color: transparent !important; border-color: transparent !important; pointer-events: none; }
+
     /* 数字用のでっかいボタン */
     .btn-suuji-large { font-family: 'Klee One', serif; width: 64px; height: 64px; font-weight: bold; border-radius: 16px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 28px; touch-action: none; display: flex; align-items: center; justify-content: center; }
     .btn-suuji-large.selected { background-color: #ffedd5; border-color: #ea580c; }
@@ -280,19 +283,19 @@
       }, false);
     })();
 
-    // 📄 ひらがな・カタカナ・すうじ の定義データ
+    // 📄 🌟 空白(スペース)を含めて、最初から綺麗な5文字ずつ（1行）のデータ構造に変更
     const CHARACTER_DATA = [
       // 1. ひらがな（清音・濁音・半濁音）
-      ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもや　ゆ　よらりるれろわ　を　ん".split("").map((c, i) => ({ id: `H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
+      ...("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもや ゆ よらりるれろわ を ん".split("").map((c, i) => ({ id: c===' '?`H_blank_${i}`:`H_S_${i}`, char: c, reading: c, type: 'H', genre: 'せいおん（あ〜ん）' }))),
       ...("がぎぐげござじずぜぞだぢづでどばびぶべぼ".split("").map((c, i) => ({ id: `H_D_${i}`, char: c, reading: c, type: 'H', genre: 'だくおん（が〜ぼ）' }))),
       ...("ぱぴぷぺぽ".split("").map((c, i) => ({ id: `H_HD_${i}`, char: c, reading: c, type: 'H', genre: 'はんだくおん（ぱ〜ぽ）' }))),
 
       // 2. カタカナ（清音・濁音・半濁音）
-      ...("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤ　ユ　ヨラリルレロワ　ヲ　ン".split("").map((c, i) => ({ id: `K_S_${i}`, char: c, reading: c, type: 'K', genre: 'セイオン（ア〜ン）' }))),
+      ...("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤ ユ ヨラリルレロワ ヲ ン".split("").map((c, i) => ({ id: c===' '?`K_blank_${i}`:`K_S_${i}`, char: c, reading: c, type: 'K', genre: 'セイオン（ア〜ン）' }))),
       ...("ガギグゲゴザジズゼゾダヂヅデドバビブベボ".split("").map((c, i) => ({ id: `K_D_${i}`, char: c, reading: c, type: 'K', genre: 'ダクオン（ガ〜ボ）' }))),
       ...("パピプペポ".split("").map((c, i) => ({ id: `K_HD_${i}`, char: c, reading: c, type: 'K', genre: 'ハンダクオン（パ〜ぽ）' }))),
 
-      // 3. 数字（1〜5, 6〜0の構成）
+      // 3. 数字
       ...("1234567890".split("").map((c, i) => ({ id: `S_${i}`, char: c, reading: c, type: 'S', genre: 'すうじ（1〜0）' })))
     ];
 
@@ -380,7 +383,6 @@
       if(tabCode === 'S') { document.getElementById('tab-s').classList.add('active'); document.getElementById('panel-s').classList.add('active'); }
     }
 
-    // 🗂️ パネル内ボタン構築
     function buildCategoryPanels() {
       const tabs = { 'H': 'panel-h', 'K': 'panel-k', 'S': 'panel-s' };
       
@@ -402,7 +404,7 @@
           
           const items = tabData.filter(item => item.genre === genreName);
 
-          // 【数字タブ】の場合：1〜5 と 6〜0 の2段の横並び構成
+          // 【数字タブ】
           if (code === 'S') {
             const container = document.createElement('div');
             container.className = 'grid-suuji-container';
@@ -423,20 +425,15 @@
                 updateStartButtonState();
               };
               
-              if (index < 5) {
-                row1.appendChild(btn); 
-              } else {
-                row2.appendChild(btn); 
-              }
+              if (index < 5) { row1.appendChild(btn); } else { row2.appendChild(btn); }
             });
 
             container.appendChild(row1);
             container.appendChild(row2);
             section.appendChild(container);
           } 
-          // 【ひらがな・カタカナ】の場合
+          // 【ひらがな・カタカナ】
           else {
-            // 🌟 左詰めを維持するための固定幅コンテナを用意
             const gridContainer = document.createElement('div');
             gridContainer.className = 'char-grid-container';
 
@@ -445,21 +442,24 @@
 
             items.forEach((item, index) => {
               const btn = document.createElement('button');
-              btn.className = 'btn-kanji' + (selectedIds.includes(item.id) ? ' selected' : '');
-              btn.innerText = item.char;
-              btn.onclick = () => {
-                if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
-                else selectedIds.push(item.id);
-                buildCategoryPanels();
-                updateStartButtonState();
-              };
+              
+              // 🌟 全角スペースのデータは透明化クラスを追加
+              if (item.char === ' ') {
+                btn.className = 'btn-kanji empty-space';
+                btn.innerText = '';
+              } else {
+                btn.className = 'btn-kanji' + (selectedIds.includes(item.id) ? ' selected' : '');
+                btn.innerText = item.char;
+                btn.onclick = () => {
+                  if(selectedIds.includes(item.id)) selectedIds = selectedIds.filter(id => id !== item.id);
+                  else selectedIds.push(item.id);
+                  buildCategoryPanels();
+                  updateStartButtonState();
+                };
+              }
               rowGroup.appendChild(btn);
 
-              // 🌟 「よ・ヨ」の後で強制的に改行を入れる特別チェック
-              const isSpecialBreak = (code === 'H' && genreName.includes('せいおん') && item.char === 'よ') ||
-                                     (code === 'K' && genreName.includes('セイオン') && item.char === 'ヨ');
-
-              if ((index + 1) % 5 === 0 || isSpecialBreak || index === items.length - 1) {
+              if ((index + 1) % 5 === 0 || index === items.length - 1) {
                 gridContainer.appendChild(rowGroup);
                 rowGroup = document.createElement('div');
                 rowGroup.className = 'char-row-group';
@@ -473,7 +473,11 @@
     }
 
     function selectAllCurrentTab() {
-      const currentTabIds = CHARACTER_DATA.filter(item => item.type === currentTab).map(item => item.id);
+      // 🌟 「すべて選ぶ」のとき、空白スペース（idにblankが含まれるもの）を除外して選択
+      const currentTabIds = CHARACTER_DATA
+        .filter(item => item.type === currentTab && !item.id.includes('blank'))
+        .map(item => item.id);
+        
       currentTabIds.forEach(id => {
         if(!selectedIds.includes(id)) selectedIds.push(id);
       });
@@ -586,7 +590,7 @@
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const pos = { x: clientX - rect.left, y: clientY - top };
+        const pos = { x: clientX - rect.left, y: clientY - rect.top };
         
         ctx.beginPath(); 
         ctx.moveTo(pos.x, pos.y);
