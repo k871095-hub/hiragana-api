@@ -60,18 +60,19 @@
     .tab-content-panel { height: 100%; overflow-y: auto; display: none; -webkit-overflow-scrolling: touch; }
     .tab-content-panel.active { display: block; }
     
-    /* 選択画面を中央寄せにするセクション設定 */
+    /* 選択画面のセクション設定 */
     .genre-section { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
     .genre-title { font-size: 18px; color: #c2410c; margin: 0 0 15px 0; padding-left: 8px; border-left: 5px solid #f97316; font-weight: bold; align-self: flex-start; }
     
-    /* 行ごとのグループスタイルを中央寄せに変更 */
-    .char-row-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; width: 100%; }
+    /* 🌟 ピラミッド化を防ぐため、全体のコンテナを固定幅にして左詰めに並べる */
+    .char-grid-container { display: flex; flex-direction: column; gap: 10px; width: 330px; margin: 0 auto; }
+    .char-row-group { display: flex; gap: 10px; justify-content: flex-start; width: 100%; }
     
     /* 数字用の横並び2段コンテナスタイル */
     .grid-suuji-container { display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; padding: 20px 0; width: 100%; }
     .grid-suuji-row { display: flex; gap: 12px; justify-content: center; width: 100%; }
 
-    .btn-kanji { font-family: 'Klee One', serif; width: 58px; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; display: flex; align-items: center; justify-content: center; }
+    .btn-kanji { font-family: 'Klee One', serif; width: 58px; height: 58px; font-weight: bold; border-radius: 12px; border: 3px solid #e2e8f0; background-color: white; cursor: pointer; font-size: 24px; touch-action: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .btn-kanji.selected { background-color: #ffedd5; border-color: #ea580c; }
     
     /* 数字用のでっかいボタン */
@@ -433,8 +434,12 @@
             container.appendChild(row2);
             section.appendChild(container);
           } 
-          // 【ひらがな・カタカナ】の場合：5文字ごとに区切りつつ、や行の後は強制改行
+          // 【ひらがな・カタカナ】の場合
           else {
+            // 🌟 左詰めを維持するための固定幅コンテナを用意
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'char-grid-container';
+
             let rowGroup = document.createElement('div');
             rowGroup.className = 'char-row-group';
 
@@ -455,11 +460,12 @@
                                      (code === 'K' && genreName.includes('セイオン') && item.char === 'ヨ');
 
               if ((index + 1) % 5 === 0 || isSpecialBreak || index === items.length - 1) {
-                section.appendChild(rowGroup);
+                gridContainer.appendChild(rowGroup);
                 rowGroup = document.createElement('div');
                 rowGroup.className = 'char-row-group';
               }
             });
+            section.appendChild(gridContainer);
           }
           panel.appendChild(section);
         });
